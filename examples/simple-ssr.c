@@ -21,14 +21,19 @@ HTTPResponse test(void* data) {
 
 int main() {
 
-    HTTPServer server = new_http_server(
-        "127.0.0.1", 8080, 2, 
-        new_route("/", &home),
-        new_route("/test", &test)
-    );
+    // HTTPServer server = new_http_server(
+    //     "127.0.0.1", 8080, 2, 
+    //     new_route("/", &home),
+    //     new_route("/test", &test)
+    // );
     
-    start_http_server(&server);
-    close_http_server(&server);
+    // start_http_server(&server);
+    // close_http_server(&server);
+
+    NodeInstance n1 = spawn_node_instance("./examples/main.js");
+    String result = read_node_instance(&n1);
+    printf("%s\n", result.content);
+    destroy_node_instance(&n1);
 
     return 0;
 

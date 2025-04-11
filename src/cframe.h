@@ -1,4 +1,4 @@
-/* cframe - v0.0.1 - MIT License - https://github.com/zb1ndev/zansi.h 
+/* cframe - v1.0.0 - MIT License - https://github.com/zb1ndev/zansi.h 
 
     MIT License
     Copyright (c) 2025 Joel Zbinden

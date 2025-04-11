@@ -31,7 +31,7 @@
 
         }
 
-        int handle_http_request(HTTPServer* server, SOCKET client_socket) {
+        int handle_http_request(HTTPServer* server, ClientSocket client_socket) {
 
             #define BUFFER_SIZE 1024 * 4 // 4 Kilobytes
             char buffer[BUFFER_SIZE] = {0};
@@ -83,7 +83,7 @@
         int start_http_server(HTTPServer* server) {
 
             WSADATA wsa_data;
-            SOCKET server_socket, client_socket;
+            ClientSocket server_socket, client_socket;
             struct sockaddr_in server_addr, client_addr;
             int client_len = sizeof(client_addr);
 
@@ -103,7 +103,7 @@
         
             server_addr.sin_family = AF_INET;
             if (InetPton(AF_INET, server->address, &server_addr.sin_addr.s_addr) <= 0) {
-                perror("Failed to convert address to network-byte-order");
+                perror("Failed to convert address to network-byte-order...");
                 return -1;
             }
             server_addr.sin_port = htons(server->port);
@@ -145,7 +145,7 @@
         int start_http_server_with_handler(HTTPServer* server, void(*error_handler)(int)) {
 
             WSADATA wsa_data;
-            SOCKET server_socket, client_socket;
+            ClientSocket server_socket, client_socket;
             struct sockaddr_in server_addr, client_addr;
             int client_len = sizeof(client_addr);
 
@@ -166,7 +166,7 @@
             server_addr.sin_family = AF_INET;
             if (InetPton(AF_INET, server->address, &server_addr.sin_addr.s_addr) <= 0) {
                 error_handler(CFRAME_ERROR_ADDR_TO_NBO);
-                return -1;
+                return 1;
             }
             server_addr.sin_port = htons(server->port);
         

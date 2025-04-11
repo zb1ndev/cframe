@@ -1,4 +1,4 @@
-/* cframe - v1.0.0 - MIT License - https://github.com/zb1ndev/zansi.h 
+/* cframe - v1.1.0 - MIT License - https://github.com/zb1ndev/zansi.h 
 
     MIT License
     Copyright (c) 2025 Joel Zbinden
@@ -21,7 +21,10 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 
-    WARNING : Depends on https://github.com/zb1ndev/zstring.h | Minimum Version : 1.2.2
+    WARNING : Depends on https://github.com/zb1ndev/zstring.h | Minimum Version : 1.2.3
+
+    Version 1.1.0 Change-Log : 
+    - Added Unix Support
 
 */
 
@@ -34,7 +37,7 @@
         #include <stdlib.h>
         #include <stdbool.h>
 
-        #include "./zstring.h" // zstring.h : Version 1.2.2
+        #include "./zstring.h" // zstring.h : Version 1.2.3
 
         #if defined(_WIN32) 
 
@@ -44,7 +47,13 @@
 
         #elif defined(unix)
 
-            // UNIX includes
+            #include <unistd.h>
+            #include <netinet/in.h>  
+            #include <arpa/inet.h>    
+            
+            #include <sys/types.h>
+            #include <sys/wait.h>
+            #include <fcntl.h>
 
         #endif
 
@@ -77,18 +86,38 @@
 
         } HTTPServer;
 
-        typedef struct NodeInstance {
+        #if defined(_WIN32) 
 
-            char available;
+            #define ClientSocket SOCKET
 
-            STARTUPINFO start_info;
-            PROCESS_INFORMATION process_info;
-            SECURITY_ATTRIBUTES attributes;
+            typedef struct NodeInstance {
 
-            HANDLE child_read_stdout, child_write_stdout; 
-            HANDLE child_read_stdin, child_write_stdin;
+                char available;
 
-        } NodeInstance;
+                STARTUPINFO start_info;
+                PROCESS_INFORMATION process_info;
+                SECURITY_ATTRIBUTES attributes;
+
+                HANDLE child_read_stdout, child_write_stdout; 
+                HANDLE child_read_stdin, child_write_stdin;
+
+            } NodeInstance;
+
+        #elif defined(unix)
+
+            #define ClientSocket int
+
+            typedef struct NodeInstance {
+
+                char available;
+
+                pid_t pid;
+                int child_stdout_pipe[2]; // [0] = read, [1] = write
+                int child_stdin_pipe[2];  // [0] = read, [1] = write
+
+            } NodeInstance;
+
+        #endif
 
     #pragma endregion
     #pragma region ERRORS
@@ -128,7 +157,7 @@
      * @param server The server you want to start.
      * @returns Whether the function has succeded ```0 = success```. 
      */
-    int handle_http_request(HTTPServer* server, SOCKET client_socket);
+    int handle_http_request(HTTPServer* server, ClientSocket client_socket);
 
     /** A function that starts the specified HTTP Server.
      * @param server The server you want to start.

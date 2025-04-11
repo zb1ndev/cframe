@@ -1,4 +1,4 @@
-/* zstring.h - v1.2.2 - MIT License - https://github.com/zb1ndev/zstring.h 
+/* zstring.h - v1.2.3 - MIT License - https://github.com/zb1ndev/zstring.h 
 
     MIT License
     Copyright (c) 2025 Joel Zbinden
@@ -39,6 +39,10 @@
     - Add string_contains()
     
     Version 1.2.2 Change-Log :
+    - Minor Safety Improvements
+
+
+    Version 1.2.3 Change-Log :
     - Minor Safety Improvements
 
 */
@@ -233,10 +237,10 @@
 
     String string_from(char* src) {
 
-        String return_value = { 0 };
+        String return_value = { .content = NULL, .length = 0, .capacity = 0 };
         if (string_append(&return_value, src) == 0)
             return return_value;
-        return (String){ 0 };
+        return (String){ .content = NULL, .length = 0, .capacity = 0 };
 
     }
     
@@ -249,7 +253,7 @@
         for (size_t c = 0; format[c] != '\0'; c++) {
             if (format[c] == '%') {
                 if (format[c+1] == '%') {
-                    string_append(&return_value, "%");
+                    string_append_c(&return_value, '%');
                     c+=1;
                 } else {
                     switch (format[c+=1]) {
@@ -283,12 +287,14 @@
 #pragma region String Manipulation
 
     int string_append(String* ptr, char* src) {
+
+        if (src == NULL) return 1;
         
         size_t src_length = c_strlen(src);
         if (src_length <= 0) return 0;
 
         size_t new_length = src_length + ptr->length;
-        if (new_length > ptr->capacity)
+        if (new_length+1 > ptr->capacity)
             ptr->capacity += (src_length * 2);
     
         char* temp = (char*)realloc(ptr->content, ptr->capacity); 
@@ -304,11 +310,13 @@
 
     int string_append_c(String* ptr, char src) {
         
-        if (ptr->length+1 > ptr->capacity)
+        if (ptr->length+1 > ptr->capacity) {
             ptr->capacity += 4;
-    
-        ptr->content = (char*)realloc(ptr->content, ptr->capacity); 
-        if (ptr->content == NULL) return 1;
+        }
+
+        char* temp = (char*)realloc(ptr->content, ptr->capacity); 
+        if (temp == NULL) return 1;
+        ptr->content = temp;
 
         ptr->content[(ptr->length += 1) - 1] = src;
         ptr->content[ptr->length] = '\0';

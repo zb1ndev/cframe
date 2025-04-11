@@ -33,8 +33,6 @@ int main() {
     
     start_http_server(&server);
     close_http_server(&server);
-
     return 0;
-
 
 }

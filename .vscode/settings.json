@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "cframe.h": "c"
+        "cframe.h": "c",
+        "zstring.h": "c"
     }
 }

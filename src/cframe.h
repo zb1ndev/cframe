@@ -119,6 +119,13 @@
 
         #endif
 
+        #define CFRAME_MIME_DEFAULT         "application/octet-stream"
+        #define CFRAME_MIME_HTML            "text/html"
+        #define CFRAME_MIME_JAVA_SCRIPT     "application/javascript"
+        #define CFRAME_MIME_WASM            "application/wasm"
+        #define CFRAME_MIME_DATA            "application/octet-stream"
+
+
     #pragma endregion
     #pragma region ERRORS
 

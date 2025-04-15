@@ -54,9 +54,15 @@
 
                     HTTPResponse response = server->routes[r].responder(NULL);
                     String result = string_from_format(
-                        "HTTP/1.1 %d OK\r\nContent-Type: %s\r\nConnection: %s\r\n\r\n%s",
+                        "HTTP/1.1 %d OK\r\n"
+                        "Content-Type: %s\r\n"
+                        "Content-Length: %u\r\n"
+                        "Connection: %s\r\n"
+                        "\r\n"
+                        "%s",
                         response.response_code,
                         response.content_type,
+                        response.data.length,
                         response.connection,
                         response.data.content
                     );

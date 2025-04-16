@@ -89,6 +89,9 @@
         #if defined(_WIN32) 
 
             #define ClientSocket SOCKET
+            #define close_socket(socket) closesocket(socket)
+            #define write_socket(socket, content, length) send(socket, content, length, 0)
+            #define read_socket(socket, buffer, length) recv(socket, buffer, length, 0)
 
             typedef struct NodeInstance {
 
@@ -106,6 +109,9 @@
         #elif defined(unix)
 
             #define ClientSocket int
+            #define close_socket(socket) close(socket)
+            #define write_socket(socket, content, length) write(socket, content, length)
+            #define read_socket(socket, buffer, length) read(socket, buffer, length)
 
             typedef struct NodeInstance {
 
@@ -124,7 +130,6 @@
         #define CFRAME_MIME_JAVA_SCRIPT     "application/javascript"
         #define CFRAME_MIME_WASM            "application/wasm"
         #define CFRAME_MIME_DATA            "application/octet-stream"
-
 
     #pragma endregion
     #pragma region ERRORS

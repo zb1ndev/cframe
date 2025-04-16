@@ -1,7 +1,7 @@
 clear
 
-gcc -c -o ./build/int/cframe_unix.o ./src/cframe_unix.c
-ar rcs ./build/libcframe.a ./build/int/cframe_unix.o
+gcc -c -o ./build/int/cframe.o ./src/cframe.c
+ar rcs ./build/libcframe.a ./build/int/cframe.o
 
 gcc -o ./build/simple-ssr ./examples/simple-ssr.c -L./build -l:libcframe.a
 

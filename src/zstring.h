@@ -21,7 +21,6 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 
-
     Version 1.1 Change-Log :
     - Added string_split.
     - Added string_insert.
@@ -40,7 +39,6 @@
     
     Version 1.2.2 Change-Log :
     - Minor Safety Improvements
-
 
     Version 1.2.3 Change-Log :
     - Minor Safety Improvements
@@ -65,7 +63,7 @@
     #define Z_STRING_FLOATING_ACCURACY 6
     #define ssize_t signed long
 
-    // String Creation
+    /*                          String Creation                          */
 
     /** A function that initializes a String structure with a value.
      * @param src The value you want the result to be initialized with.
@@ -81,7 +79,7 @@
      */
     String string_from_format(const char* format, ...);
 
-    // String Manipulation
+    /*                          String Manipulation                          */
 
     /** A function that appends a value to a string.
      * @param ptr The String you to append to.
@@ -199,7 +197,7 @@
     */
     ssize_t string_contains(String* ptr, char* str, char* del);
 
-    // Utilities
+    /*                          Utilities                          */
 
     /** A function that gets the length of a null terminated c-string.
      * @param str The Stringyou want to check to length of.

@@ -1,6 +1,5 @@
 #include "http.h"
-#include "../http-request-handler/handler.h"
-#include <stdio.h>
+#include "../http-request-handler/handler.h" // run_handler
 
 #pragma region UTILITIES
 

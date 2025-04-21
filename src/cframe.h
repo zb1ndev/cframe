@@ -1,4 +1,4 @@
-/* cframe - v1.2.0 - MIT License - https://github.com/zb1ndev/zansi.h 
+/* cframe - v1.3.0 - MIT License - https://github.com/zb1ndev/zansi.h 
 
     MIT License
     Copyright (c) 2025 Joel Zbinden
@@ -30,6 +30,9 @@
     - Made Connection handling better
     - Reorganized the project
 
+    Version 1.3.0 Change-Log : 
+    - Added Node Instance Management Functions ( unix and windows )
+
 */
 #if !defined(CFRAME_H)
 #define CFRAME_H
@@ -39,5 +42,6 @@
     #include "./common.h"
     #include "./http-server/http.h"
     #include "./http-request-handler/handler.h"
+    #include "./node/node.h"
 
 #endif // CFRAME_H

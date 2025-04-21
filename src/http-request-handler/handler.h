@@ -11,8 +11,6 @@
         #define write_socket(socket, content, length) send(socket, content, length, 0)
         #define read_socket(socket, buffer, length) recv(socket, buffer, length, 0)
 
-        #define perror(msg) fprintf(stderr, "%s : %d\n", msg, WSAGetLastError());
-
         #define set_server_addr(flag, new_addr, new_port, addr)                             \
             memset(&addr, 0, sizeof(addr));                                                 \
             addr.sin_family = flag;                                                         \

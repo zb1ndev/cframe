@@ -1,7 +1,10 @@
 #if !defined(COMMON_H)
 #define COMMON_H
 
+    #include <stdio.h>
     #include "zstring.h" // zstring.h : Version 1.2.3
+
+    #define BUFFER_SIZE 1024 * 4 // 4 Kilobytes
 
     #define CFRAME_MIME_DEFAULT         "application/octet-stream"
     #define CFRAME_MIME_HTML            "text/html"
@@ -50,7 +53,7 @@
         #include <ws2tcpip.h> 
         #include <windows.h>
 
-        #define BUFFER_SIZE 1024 * 4 // 4 Kilobytes
+        #define perror(msg) fprintf(stderr, "%s : %d\n", msg, WSAGetLastError());
         
         typedef SOCKET Socket; 
 

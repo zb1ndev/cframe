@@ -107,13 +107,24 @@
 
     void handle_http_request(void* context) {
 
-
+        
 
     }
 
     int run_handler(HTTPServer* server, HTTPHandler* handler) {
 
+        int epoll_fd = epoll_create1(0);
+        if (epoll_fd == -1) {
+            perror("Failed to create epoll instance...");
+            return -1;
+        }
+
+        struct epoll_event event, events[MAX_EVENTS];
+        event.data.fd = handler->server_socket;
+        event.events = EPOLLIN | EPOLLET;
+        epoll_ctl(epoll_fd, EPOLL_CTL_ADD, handler->server_socket, &event);
         
+        printf("Server listening on port %d\n", server->port);
 
     }
 

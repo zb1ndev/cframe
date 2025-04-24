@@ -82,21 +82,23 @@
 
         #include <pthread.h>
         #include <unistd.h>
+        #include <errno.h>
+        
         #include <netinet/in.h>  
         #include <arpa/inet.h>    
-
         #include <sys/types.h>
-        #include <sys/wait.h>
+        #include <sys/epoll.h>
+        #include <sys/socket.h>
         #include <fcntl.h>
         
         typedef int Socket;
-        
         typedef struct HTTPHandler {
 
-            
+            Socket server_socket, client_socket;
+            struct sockaddr_in server_addr, client_addr;
+            int addr_len;
 
         } HTTPHandler;
-
         typedef struct HTTPHandlerContext {
 
             HTTPHandler* handler;

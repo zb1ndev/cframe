@@ -8,6 +8,7 @@
         #define is_socket_invalid(socket) (socket == INVALID_SOCKET ? 0 : 1)
 
         Socket open_socket(HTTPHandler* handler, int af, int type, int protocol);
+        #define close_socket(socket) closesocket(socket)
         #define write_socket(socket, content, length) send(socket, content, length, 0)
         #define read_socket(socket, buffer, length) recv(socket, buffer, length, 0)
 
@@ -25,6 +26,7 @@
 
     #if defined(unix)
 
+        #define MAX_EVENTS 10
         #define is_socket_invalid(socket) (socket < 0 ? 0 : 1)
 
         Socket open_socket(HTTPHandler* handler, int af, int type, int protocol);
@@ -32,7 +34,7 @@
         #define write_socket(socket, content, length) write(socket, content, length)
         #define read_socket(socket, buffer, length) read(socket, buffer, length)
 
-        #define set_server_addr(flag, val, addr)                                    \
+        #define set_server_addr(flag, new_addr, new_port, addr)                     \
             memset(&addr, 0, sizeof(addr));                                         \
             addr.sin_family = flag;                                                 \
             if (inet_pton(flag, new_addr, &addr.sin_addr) <= 0) {                   \

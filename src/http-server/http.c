@@ -49,32 +49,22 @@
         handler.addr_len = sizeof(handler.client_addr);
 
         handler.server_socket = open_socket(&handler, AF_INET, SOCK_STREAM, 0);
-        if (handler.server_socket == INVALID_SOCKET) {
+        if (is_socket_invalid(handler.server_socket)) {
             perror("Failed to open socket...");
-            WSACleanup();
             return 1;
         }
 
-        memset(&handler.server_addr, 0, sizeof(handler.server_addr)); 
-        handler.server_addr.sin_family = AF_INET; 
-        handler.server_addr.sin_port = htons(8080);
-        if (InetPton(AF_INET, "127.0.0.1", &handler.server_addr.sin_addr.s_addr) <= 0) { 
-            perror("Failed to convert address to network-byte-order..."); 
-            WSACleanup(); 
-            return -1; 
-        }
+        set_server_addr(AF_INET, server->address, server->port, handler.server_addr);
 
         if (bind(handler.server_socket, (struct sockaddr *)&handler.server_addr, sizeof(handler.server_addr)) < 0) {
             perror("Failed to bind socket...");
-            closesocket(handler.server_socket);
-            WSACleanup();
+            close_socket(handler.server_socket);
             return 1;
         }
-    
+        
         if (listen(handler.server_socket, 5) < 0) {
             perror("Failed to listen to socket...");
-            closesocket(handler.server_socket);
-            WSACleanup();
+            close_socket(handler.server_socket);
             return 1;
         }
 
@@ -82,19 +72,22 @@
 
         if (run_handler(server, &handler) < 0) {
             perror("Something went wrong when handling a request...");
-            closesocket(handler.server_socket);
-            WSACleanup();
+            close_socket(handler.server_socket);
             return 1;
         }
 
-        closesocket(handler.server_socket);
-        WSACleanup();
+        close_socket(handler.server_socket);
         return 0;
 
     }
 
     void close_http_server(HTTPServer* server) {
         free(server->routes);
+
+        #if defined(_WIN32)
+            WSACleanup();
+        #endif // _WIN32
+
     }
 
 #pragma endregion

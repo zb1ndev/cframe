@@ -2,7 +2,7 @@
 #define COMMON_H
 
     #include <stdio.h>
-    #include "zstring.h" // zstring.h : Version 1.2.3
+    #include "./zstring.h" // zstring.h : Version 1.2.3
 
     #define BUFFER_SIZE 1024 * 4 // 4 Kilobytes
 
@@ -11,6 +11,9 @@
     #define CFRAME_MIME_JAVA_SCRIPT     "application/javascript"
     #define CFRAME_MIME_WASM            "application/wasm"
     #define CFRAME_MIME_DATA            "application/octet-stream"
+
+    #define CFRAME_CLOSE                "close"
+    #define CFRAME_KEEP_ALIVE           "keep-alive"
 
     /* Page Content for a ```404``` Error. */
     #define CFRAME_404_ERROR            \
@@ -73,6 +76,8 @@
             HTTPHandler* handler;
             HTTPServer* server;
             Socket socket;
+
+            void* data;
 
         } HTTPHandlerContext;
 

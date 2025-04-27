@@ -1,7 +1,7 @@
 #if !defined(NODE_H)
 #define NODE_H
 
-    #include "../common.h"
+    #include "./common.h"
 
     #if defined(_WIN32)
 

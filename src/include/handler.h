@@ -1,11 +1,11 @@
 #if !defined(HANDLER_H)
 #define HANDLER_H
 
-    #include "../common.h"
+    #include "./common.h"
 
     #if defined(_WIN32)
         
-        #define is_socket_invalid(socket) (socket == INVALID_SOCKET ? 0 : 1)
+        #define is_socket_invalid(socket) (socket == INVALID_SOCKET)
 
         Socket open_socket(HTTPHandler* handler, int af, int type, int protocol);
         #define close_socket(socket) closesocket(socket)
@@ -27,7 +27,7 @@
     #if defined(unix)
 
         #define MAX_EVENTS 10
-        #define is_socket_invalid(socket) (socket < 0 ? 0 : 1)
+        #define is_socket_invalid(socket) (socket < 0)
 
         Socket open_socket(HTTPHandler* handler, int af, int type, int protocol);
         #define close_socket(socket) close(socket)

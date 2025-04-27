@@ -1,4 +1,4 @@
-#include "handler.h"
+#include "./include/handler.h"
 
 #if defined(_WIN32)
 
@@ -24,7 +24,7 @@
             
             if (strcmp(uri, handler_context->server->routes[r].address) == 0) {
 
-                HTTPResponse response = handler_context->server->routes[r].responder(NULL);
+                HTTPResponse response = handler_context->server->routes[r].responder(handler_context);
                 String result = string_from_format(
                     "HTTP/1.1 %d OK\r\n"
                     "Content-Type: %s\r\n"
@@ -88,7 +88,7 @@
 
                     } else { 
 
-                        HTTPHandlerContext context = (HTTPHandlerContext){handler, server, s};
+                        HTTPHandlerContext context = (HTTPHandlerContext){handler, server, s, NULL};
                         handle_http_request(&context); 
                     
                     }

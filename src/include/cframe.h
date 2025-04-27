@@ -1,4 +1,4 @@
-/* cframe - v1.3.0 - MIT License - https://github.com/zb1ndev/zansi.h 
+/* cframe - v1.3.1 - MIT License - https://github.com/zb1ndev/zansi.h 
 
     MIT License
     Copyright (c) 2025 Joel Zbinden
@@ -21,7 +21,7 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 
-    WARNING : Depends on https://github.com/zb1ndev/zstring.h | Minimum Version : 1.2.3
+    WARNING : Depends on https://github.com/zb1ndev/zstring.h | Minimum Version : 1.3.0
 
     Version 1.1.0 Change-Log : 
     - Added Unix Support
@@ -33,15 +33,19 @@
     Version 1.3.0 Change-Log : 
     - Added Node Instance Management Functions ( unix and windows )
 
+    Version 1.3.1 Change-Log :
+    - Reorganized the project
+    - Updated 'zstring.h'
+
 */
 #if !defined(CFRAME_H)
 #define CFRAME_H
     
-    #include "./zstring.h" // zstring.h : Version 1.2.3
+    #include "./zstring.h" // zstring.h : Version 1.3.0
 
     #include "./common.h"
-    #include "./http-server/http.h"
-    #include "./http-request-handler/handler.h"
-    #include "./node/node.h"
+    #include "./http.h"
+    #include "./handler.h"
+    #include "./node.h"
 
 #endif // CFRAME_H

@@ -1,5 +1,5 @@
-#include "http.h"
-#include "../http-request-handler/handler.h" // run_handler
+#include "./include/http.h"
+#include "./include/handler.h" // run_handler
 
 #pragma region UTILITIES
 
@@ -82,6 +82,7 @@
     }
 
     void close_http_server(HTTPServer* server) {
+        
         free(server->routes);
 
         #if defined(_WIN32)

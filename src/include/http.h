@@ -1,7 +1,7 @@
 #if !defined(HTTP_H)
 #define HTTP_H
 
-    #include "../common.h"
+    #include "./common.h"
 
     /** A function that initializes a Route.
      * @param address The address you want to tie the ```responder``` to.

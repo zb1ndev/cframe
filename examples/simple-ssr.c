@@ -1,10 +1,12 @@
-#include "../src/cframe.h"
+#include "../src/include/cframe.h"
 
 HTTPResponse home(void* data) {
 
+    HTTPHandlerContext context = *(HTTPHandlerContext*)data;
+
     return (HTTPResponse) {
-        200, CFRAME_MIME_HTML, "close",
-        string_from("Hello World")
+        200, CFRAME_MIME_HTML, CFRAME_CLOSE,
+        string_from_format("This is a server running on %s:%d", context.server->address, context.server->port)
     };
 
 }

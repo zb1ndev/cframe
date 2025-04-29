@@ -1,14 +1,5 @@
 #include "../src/include/cframe.h"
 
-void run_node_example() {
-
-    NodeInstance node = spawn_node_instance("./examples/frontend/pages/index.js");
-    write_node_instance(&node, string_from("Hello World"));
-    String page = read_node_instance(&node);
-    destroy_node_instance(&node);
-
-}
-
 HTTPResponse home(void* data) {
 
     HTTPHandlerContext context = *(HTTPHandlerContext*)data;

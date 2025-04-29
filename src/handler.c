@@ -42,6 +42,9 @@
                 write_socket(handler_context->socket, result.content, result.length);
                 responeded = 1;
 
+                string_drop(&response.data);
+                string_drop(&result);
+
             }
             
         }

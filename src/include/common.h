@@ -19,7 +19,7 @@
     #define CFRAME_404_ERROR            \
         "HTTP/1.1 404 Not Found\r\n"    \
         "Content-Type: text/html\r\n"   \
-        "Content-Length: 36\r\n"        \
+        "Content-Length: 27\r\n"        \
         "Connection: close\r\n"         \
         "\r\n"                          \
         "<h1>404 Page Not Found</h1>"

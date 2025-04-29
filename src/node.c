@@ -17,7 +17,7 @@
             perror("Failed to create stdout pipe.");
             return (NodeInstance){ 0 };
         }
-        SetHandleInformation(result.child_read_stdin, HANDLE_FLAG_INHERIT, 0);
+        SetHandleInformation(result.child_write_stdin, HANDLE_FLAG_INHERIT, 0);
 
         ZeroMemory(&result.process_info, sizeof(PROCESS_INFORMATION));
         ZeroMemory(&result.start_info, sizeof(STARTUPINFO));
@@ -67,8 +67,16 @@
 
     int write_node_instance(NodeInstance* instance, String input) {
 
+        if (instance->child_write_stdin == NULL || instance->child_write_stdin == INVALID_HANDLE_VALUE) {
+            printf("[ERROR] Invalid pipe handle\n");
+        }
+
         DWORD bytes_written;
-        WriteFile(instance->child_write_stdin, input.content, (DWORD)input.length, &bytes_written, NULL);
+        if (!WriteFile(instance->child_write_stdin, input.content, (DWORD)input.length + 1, &bytes_written, NULL)) {
+            printf("\n[ERROR] 'WriteFile' failed with error %lu\n", GetLastError());
+            return -1;
+        }
+        
         CloseHandle(instance->child_write_stdin);
         instance->child_write_stdin = NULL;
 

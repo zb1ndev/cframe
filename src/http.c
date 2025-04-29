@@ -68,7 +68,7 @@
             return 1;
         }
 
-        printf("HTTP Server running on %s:%d\n", server->address, server->port);
+        printf("[\e[0;30mPROCESS\e[0m] HTTP Server running on '\e[0;36m%s:%d\e[0m'\n", server->address, server->port);
 
         if (run_handler(server, &handler) < 0) {
             perror("Something went wrong when handling a request...");

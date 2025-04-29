@@ -48,8 +48,6 @@
         
         if (responeded == 0) {   
             write_socket(handler_context->socket, CFRAME_404_ERROR, strlen(CFRAME_404_ERROR));
-            FD_CLR(handler_context->socket, &handler_context->handler->master_fd);
-            closesocket(handler_context->socket);
         }
 
         FD_CLR(handler_context->socket, &handler_context->handler->master_fd);

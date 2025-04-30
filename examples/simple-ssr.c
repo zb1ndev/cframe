@@ -3,10 +3,11 @@
 HTTPResponse home(void* data) {
 
     HTTPHandlerContext context = *(HTTPHandlerContext*)data;
+    String response = string_from_format("This server is running on %s:%d", context.server->address, context.server->port);
 
     return (HTTPResponse) {
         200, CFRAME_MIME_HTML, CFRAME_CLOSE,
-        string_from_format("This server is running on %s:%d", context.server->address, context.server->port)
+        response.length, string_to_bytes(&response)
     };
 
 }

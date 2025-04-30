@@ -25,25 +25,35 @@
             if (strcmp(uri, handler_context->server->routes[r].address) == 0) {
 
                 HTTPResponse response = handler_context->server->routes[r].responder(handler_context);
-                String result = string_from_format(
+                String head = string_from_format (
+
                     "HTTP/1.1 %d OK\r\n"
                     "Content-Type: %s\r\n"
                     "Content-Length: %u\r\n"
                     "Connection: %s\r\n"
-                    "\r\n"
-                    "%s",
+                    "\r\n",
+
                     response.response_code,
                     response.content_type,
-                    response.data.length,
-                    response.connection,
-                    response.data.content
+                    response.data_length,
+                    response.connection
+
                 );
 
-                write_socket(handler_context->socket, result.content, result.length);
+                size_t result_length = (response.data_length + head.length);
+                unsigned char* result = (unsigned char*)malloc(result_length * sizeof(unsigned char));
+                if (result == NULL)
+                    break;
+
+                memcpy(result, head.content, head.length);
+                memcpy(result + head.length, response.data, response.data_length);
+
+                write_socket(handler_context->socket, result, result_length);
                 responeded = 1;
 
-                string_drop(&response.data);
-                string_drop(&result);
+                free(result);
+                free(response.data);
+                string_drop(&head);
 
             }
             

@@ -29,7 +29,9 @@
         int response_code;
         const char* content_type;
         const char* connection;
-        String data;
+        
+        size_t data_length;
+        unsigned char* data;
 
     } HTTPResponse;
 

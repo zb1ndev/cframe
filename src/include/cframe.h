@@ -21,7 +21,7 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 
-    WARNING : Depends on https://github.com/zb1ndev/zstring.h | Minimum Version : 1.3.0
+    WARNING : Depends on https://github.com/zb1ndev/zstring.h | Minimum Version : 1.3.1
 
     Version 1.1.0 Change-Log : 
     - Added Unix Support
@@ -36,6 +36,11 @@
     Version 1.3.1 Change-Log :
     - Reorganized the project
     - Updated 'zstring.h'
+
+    Version 1.4.0 Change-Log :
+    - Added support for sending all file types
+    - Fixed Node Implementation
+    - Safety Improvments
 
 */
 #if !defined(CFRAME_H)

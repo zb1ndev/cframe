@@ -2,6 +2,7 @@
     "files.associations": {
         "cframe.h": "c",
         "zstring.h": "c",
-        "handler.h": "c"
+        "handler.h": "c",
+        "cstdlib": "c"
     }
 }

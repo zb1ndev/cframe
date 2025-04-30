@@ -1,4 +1,4 @@
-/* zstring.h - v1.2.3 - MIT License - https://github.com/zb1ndev/zstring.h 
+/* zstring.h - v1.3.1 - MIT License - https://github.com/zb1ndev/zstring.h 
 
     MIT License
     Copyright (c) 2025 Joel Zbinden
@@ -25,6 +25,9 @@
     - Re-wrote base functionality
     - Re-wrote most functions 
     - Verfied Memory Safety
+
+    Version 1.3.1 Change-Log :
+    - Added string_to_bytes
 
 */
 
@@ -139,6 +142,12 @@
      * @returns ```number``` as a string.
      */
     String float_to_string(long double number);
+
+    /** A function that turns a string into an array of bytes.
+     * @param ptr The string you want to turn into bytes.
+     * @returns The string as bytes.
+     */
+    unsigned char* string_to_bytes(String* ptr);
 
 #if defined(Z_STRING_IMPLEMENTATION)
 
@@ -398,6 +407,16 @@
 
         return result;
                     
+    }
+
+    unsigned char* string_to_bytes(String* ptr) {
+
+        unsigned char* result = (unsigned char*)malloc(ptr->length * sizeof(unsigned char));
+        if (result == NULL)
+            return NULL;
+        memcpy(result, ptr->content, ptr->length);
+        return result;
+
     }
 
 #endif // Z_STRING_IMPLEMENTATION

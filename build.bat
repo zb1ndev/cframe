@@ -1,0 +1,1 @@
+call .\examples\01-static-webpage\build.bat

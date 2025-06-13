@@ -1,6 +1,6 @@
 # cframe.h
+A small header-only C library for small websites / applications
 
-A minimal, header-only HTTP server library for C (Windows)
 
 ## Overview
 

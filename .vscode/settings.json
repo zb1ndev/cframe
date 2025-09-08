@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "epoll.h": "c",
+        "zen-string.h": "c",
+        "stdbool.h": "c",
+        "cframe.h": "c"
+    }
+}

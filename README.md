@@ -2,7 +2,7 @@
 
 ### A Minimal HTTP Server Framework for Oracle ARM-Based Linux Servers
 
-> _"If the lack of namespacing or cross-platform support bothers you, please, by all means, f*** off :)"_  
+> _"If the lack of namespacing or cross-platform support bothers you, figure it out yourself"_  
 > – Author's note
 
 ## Overview

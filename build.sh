@@ -1,2 +1,2 @@
-clang -o test test.c
-./test
+clang -o ./bin/test test.c
+./bin/test

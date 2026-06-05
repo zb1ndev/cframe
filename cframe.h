@@ -340,13 +340,13 @@ int                 http_connection_accept  (http_server_t* server, int worker_f
 void                http_try_write_error    (int fd, int code);
 http_req_state_t    http_get_request_state  (http_client_t* client);
 void*               http_server_worker      (void* data);
-http_response_t     http_create_response    (const string_t mime, string_t data, size_t data_length);
+http_response_t     http_create_response    (int status, const string_t mime, string_t data, size_t data_length);
 int                 http_handle_request     (http_server_t* server, http_client_t* client);
 
 // dom_element_t       dom_create_element      (html_tag_t tag, string_t props, string_t content, size_t child_count, ...);
 // void                dom_free_element        (dom_element_t* element);
 // string_t            dom_render              (dom_element_t* root);
-
+#define CFRAME_IMPLEMENTATION
 #if defined(CFRAME_IMPLEMENTATION)
 
     #undef EXIT_FAILURE
@@ -400,7 +400,7 @@ int                 http_handle_request     (http_server_t* server, http_client_
             return EXIT_FAILURE;            
         }
 
-        pthread_t* workers = calloc(server->workers, sizeof(pthread_t));
+        pthread_t* workers = (pthread_t*)calloc(server->workers, sizeof(pthread_t));
         if (workers == NULL) {
             err(errno, "http_server_start: calloc");
             close(server->fd);
@@ -409,8 +409,11 @@ int                 http_handle_request     (http_server_t* server, http_client_
         
         for (int w = 0; w < server->workers; w++)
             pthread_create(&workers[w], NULL, &http_server_worker, (void*)server);
+       
         for (int w = 0; w < server->workers; w++)
             pthread_join(workers[w], NULL);
+
+        // printf("Hello World\n");
 
         return EXIT_SUCCESS;
 
@@ -426,12 +429,13 @@ int                 http_handle_request     (http_server_t* server, http_client_
         struct sockaddr addr;
         socklen_t addr_len = sizeof(addr);
 
-        http_client_t* client = calloc(1, sizeof(http_client_t));
+        http_client_t* client = (http_client_t*)calloc(1, sizeof(http_client_t));
         if (client == NULL) {
             err(errno, "http_connection_accept: calloc");
             return EXIT_FAILURE;
         }
 
+        client->read_size = (4 * KB) + 1;
         client->fd = accept(server->fd, &addr, &addr_len);
         if (client->fd < 0) {
             if (errno == EWOULDBLOCK)
@@ -452,7 +456,6 @@ int                 http_handle_request     (http_server_t* server, http_client_
         };
 
         epoll_ctl(worker_fd, EPOLL_CTL_ADD, client->fd, &client_event);
-
         return EXIT_SUCCESS;
 
     }
@@ -483,21 +486,21 @@ int                 http_handle_request     (http_server_t* server, http_client_
         if (major == 1 && minor == 1)
             client->keep_alive = true;
             
-        char* header = memmem(client->read_buffer, client->read_offset, "\r\n\r\n", 4);
+        char* header = (char*)memmem(client->read_buffer, client->read_offset, "\r\n\r\n", 4);
         if (header == NULL)
             return RS_AGAIN;
 
         size_t header_len = header - client->read_buffer;
-        char* connection = memmem(client->read_buffer, header_len, "close", 5);
+        char* connection = (char*)memmem(client->read_buffer, header_len, "close", 5);
         if (connection != NULL)
             client->keep_alive = false;
 
-        char* temp = memmem(client->read_buffer, header_len, "Content-Length:", 5);
+        char* temp = (char*)memmem(client->read_buffer, header_len, "Content-Length:", 5);
         if (temp == NULL)
             return RS_DONE;
         temp += 15;
 
-        char* temp_end = memmem(temp, header_len, "\r\n", 2);
+        char* temp_end = (char*)memmem(temp, header_len, "\r\n", 2);
         if (temp_end == NULL)
             return RS_ERROR; // Malformed Header
 
@@ -527,7 +530,7 @@ int                 http_handle_request     (http_server_t* server, http_client_
             return NULL;
         }
 
-        struct epoll_event* events = calloc(server->max_events, sizeof(struct epoll_event));
+        struct epoll_event* events = (struct epoll_event*)calloc(server->max_events, sizeof(struct epoll_event));
         if (events == NULL) {
             err(errno, "http_server_worker: calloc");
             goto exit;
@@ -544,8 +547,8 @@ int                 http_handle_request     (http_server_t* server, http_client_
         }
         
         while (server->running)  {
-            
-            int event_count = epoll_wait(worker_fd, events, server->max_events, 5000);
+
+            int event_count = epoll_wait(worker_fd, events, server->max_events, -1);
             if (event_count < 0) {
                 if (errno == EINTR)
                     continue;
@@ -739,52 +742,18 @@ int                 http_handle_request     (http_server_t* server, http_client_
         if (events != NULL) 
             free(events);
         close(worker_fd);
-        server->running = false;
         return NULL;
 
     }
     
-    http_response_t http_create_response(const string_t mime, string_t data, size_t data_length) {
+    http_response_t http_create_response(int status, const string_t mime, string_t data, size_t data_length) {
 
-        #define RESP_SKEL_HEAD_LEN 1024
-
-        if (mime == NULL || data == NULL || data_length == 0) {
-            err(EINVAL, "http_create_response: mime, data, or data_length parameters are invalid");
-            return empty_http_response_t;
-        }
-
-        http_response_t response;
-        size_t mime_length = strlen(mime);
-        response.data_length = (RESP_SKEL_HEAD_LEN + mime_length + data_length);
-
-        response.data = calloc(response.data_length, sizeof(char));
-        if (response.data == NULL) {
-            err(errno, "http_create_response: calloc");
-            return empty_http_response_t;
-        }
-
-        int offset = snprintf(response.data, response.data_length,
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: %s\r\n"
-            "Content-Length: %zu\r\n"
-            "\r\n",
-            mime, data_length
-        );
-
-        if (offset < 0 || (size_t)offset >= response.data_length) {
-            err(EINVAL, "http_create_response: snprintf");
-            free(response.data);
-            return empty_http_response_t;
-        }
-
-        if ((size_t)offset + data_length > response.data_length) {
-            err(EOVERFLOW, "http_create_response: body exceeded capacity");
-            free(response.data);
-            return empty_http_response_t;
-        }
-
-        memcpy(response.data + offset, data, data_length);
-        return response;
+        return (http_response_t) {
+            .content_type = mime,
+            .data_length = data_length,
+            .data = data,
+            .status = status            
+        };
 
     }
 
@@ -860,12 +829,11 @@ int                 http_handle_request     (http_server_t* server, http_client_
             return EXIT_FAILURE;
 
         http_route_t* route = &server->route_404;
-        for (size_t r = 0; r < server->route_count + 1; r++) {
-            if (strcmp(request.uri, route->uri) == 0)
+        for (size_t r = 0; r < server->route_count; r++) {
+            if (strcmp(request.uri, server->routes[r].uri) == 0) {
+                route = &server->routes[r];
                 break;
-            route = (r == server->route_count)
-                ? NULL
-                : &server->routes[r];
+            }
         }
 
         if (route->handler == NULL) {
@@ -892,7 +860,7 @@ int                 http_handle_request     (http_server_t* server, http_client_
             http_try_write_error(client->fd, result.status);
             return EXIT_FAILURE;
         }
-
+        
         int header_len = snprintf (
             client->write_buffer, 
             HTTP_HEADER_MAX,

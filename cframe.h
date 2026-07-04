@@ -123,23 +123,6 @@
 
 typedef char* string_t;
 
-void* memmem(const void* haystack, size_t hlen, const void* needle, size_t nlen) {
-    
-    if (hlen < nlen) 
-        return NULL;
-    
-    if (nlen == 0) 
-        return (void*)haystack;
-    
-    const char* h = (const char*)haystack;
-    const char* n = (const char*)needle;
-    for (size_t i = 0; i <= hlen - nlen; i++)
-        if (memcmp(h + i, n, nlen) == 0)
-            return (void*)(h + i);
-    return NULL;
-
-}
-
 ////////////////////////////////////////////////////////
 // FORWARD DECLARATIONS                               //
 ////////////////////////////////////////////////////////
@@ -335,6 +318,8 @@ struct dom_element_t {
 // FUNCTION DECLARATIONS                              //
 ////////////////////////////////////////////////////////
 
+void*               memmem                  (const void* haystack, size_t hlen, const void* needle, size_t nlen);
+
 int                 http_server_start       (http_server_t* server);
 int                 http_connection_accept  (http_server_t* server, int worker_fd, struct epoll_event* event);
 void                http_try_write_error    (int fd, int code);
@@ -346,11 +331,29 @@ int                 http_handle_request     (http_server_t* server, http_client_
 // dom_element_t       dom_create_element      (html_tag_t tag, string_t props, string_t content, size_t child_count, ...);
 // void                dom_free_element        (dom_element_t* element);
 // string_t            dom_render              (dom_element_t* root);
-#define CFRAME_IMPLEMENTATION
+
+// #define CFRAME_IMPLEMENTATION
 #if defined(CFRAME_IMPLEMENTATION)
 
     #undef EXIT_FAILURE
     #define EXIT_FAILURE -1
+
+    void* memmem(const void* haystack, size_t hlen, const void* needle, size_t nlen) {
+        
+        if (hlen < nlen) 
+            return NULL;
+        
+        if (nlen == 0) 
+            return (void*)haystack;
+        
+        const char* h = (const char*)haystack;
+        const char* n = (const char*)needle;
+        for (size_t i = 0; i <= hlen - nlen; i++)
+            if (memcmp(h + i, n, nlen) == 0)
+                return (void*)(h + i);
+        return NULL;
+
+    }
 
     int http_server_start(http_server_t* server) {
 
@@ -397,7 +400,12 @@ int                 http_handle_request     (http_server_t* server, http_client_
         if (fcntl(server->fd, F_SETFL, flags | O_NONBLOCK) < 0) {
             err(errno, "http_server_start: fcntl");
             close(server->fd);
-            return EXIT_FAILURE;            
+            return EXIT_FAILURE;
+        }
+
+        if (server->workers == 0) {
+            http_server_worker(server);
+            return EXIT_SUCCESS;
         }
 
         pthread_t* workers = (pthread_t*)calloc(server->workers, sizeof(pthread_t));
@@ -412,8 +420,6 @@ int                 http_handle_request     (http_server_t* server, http_client_
        
         for (int w = 0; w < server->workers; w++)
             pthread_join(workers[w], NULL);
-
-        // printf("Hello World\n");
 
         return EXIT_SUCCESS;
 
@@ -467,6 +473,7 @@ int                 http_handle_request     (http_server_t* server, http_client_
             case 400 : message = ERROR_400; break;
             case 413 : message = ERROR_413; break;
             case 500 : message = ERROR_500; break;
+            default  : message = ERROR_404; break;
         }
 
         write(fd, message, strlen(message));
@@ -480,7 +487,7 @@ int                 http_handle_request     (http_server_t* server, http_client_
             return RS_ERROR;
 
         int major, minor;
-        if (sscanf(client->read_buffer, "%*7s %*2047s HTTP/%d.%d %*8191[^\0]", &major, &minor) != 2)
+        if (sscanf(client->read_buffer, "%*7s %*2047s HTTP/%d.%d %*8191[^\n]", &major, &minor) != 2)
             return RS_ERROR;
 
         if (major == 1 && minor == 1)
@@ -495,7 +502,7 @@ int                 http_handle_request     (http_server_t* server, http_client_
         if (connection != NULL)
             client->keep_alive = false;
 
-        char* temp = (char*)memmem(client->read_buffer, header_len, "Content-Length:", 5);
+        char* temp = (char*)memmem(client->read_buffer, header_len, "Content-Length:", 15);
         if (temp == NULL)
             return RS_DONE;
         temp += 15;
@@ -546,9 +553,9 @@ int                 http_handle_request     (http_server_t* server, http_client_
             goto exit;
         }
         
-        while (server->running)  {
+        while (server->running) {
 
-            int event_count = epoll_wait(worker_fd, events, server->max_events, -1);
+            int event_count = epoll_wait(worker_fd, events, server->max_events, 0);
             if (event_count < 0) {
                 if (errno == EINTR)
                     continue;
@@ -584,6 +591,8 @@ int                 http_handle_request     (http_server_t* server, http_client_
                         continue;
                     }
 
+                    printf("%s\n", client->read_buffer);
+
                     if (recieved == 0) {
                         close(client->fd);
                         free(client);
@@ -592,6 +601,22 @@ int                 http_handle_request     (http_server_t* server, http_client_
 
                     client->read_offset += recieved;
                     http_req_state_t state = http_get_request_state(client);
+
+                    if (state == RS_AGAIN) {
+                        
+                        struct epoll_event ev = {
+                            .events   = EPOLLIN | EPOLLET | EPOLLONESHOT,
+                            .data.ptr = client,
+                        };
+
+                        if (epoll_ctl(worker_fd, EPOLL_CTL_MOD, client->fd, &ev) < 0) {
+                            err(errno, "http_server_worker: epoll_ctl");
+                            close(client->fd);
+                            free(client);
+                            continue;
+                        }
+
+                    }
 
                     if (state == RS_ERROR) {
                         err(EBADR, "http_server_worker: http_get_request_state");
@@ -658,6 +683,18 @@ int                 http_handle_request     (http_server_t* server, http_client_
                                 break;
                             }
 
+                            struct epoll_event ev = {
+                                .events   = EPOLLIN | EPOLLET | EPOLLONESHOT,
+                                .data.ptr = client,
+                            };
+
+                            if (epoll_ctl(worker_fd, EPOLL_CTL_MOD, client->fd, &ev) < 0) {
+                                err(errno, "http_server_worker: epoll_ctl");
+                                close(client->fd);
+                                free(client);
+                                continue;
+                            }
+
                         }
 
                     }
@@ -691,16 +728,6 @@ int                 http_handle_request     (http_server_t* server, http_client_
                     }
 
                     if (!client_closed && client->write_offset == client->write_size) {
-
-                        struct epoll_event ev = {
-                            .events   = EPOLLIN | EPOLLET,
-                            .data.ptr = client,
-                        };
-
-                        if (epoll_ctl(worker_fd, EPOLL_CTL_MOD, client->fd, &ev) < 0) {
-                            err(errno, "http_server_worker: epoll_ctl");
-                            goto exit;
-                        }
                          
                         memset(client->read_buffer, 0, client->read_size);
                         free(client->write_buffer);
@@ -714,6 +741,16 @@ int                 http_handle_request     (http_server_t* server, http_client_
                             close(client->fd);
                             free(client);
                             break;
+                        }
+
+                        struct epoll_event ev = {
+                            .events   = EPOLLIN | EPOLLET | EPOLLONESHOT,
+                            .data.ptr = client,
+                        };
+
+                        if (epoll_ctl(worker_fd, EPOLL_CTL_MOD, client->fd, &ev) < 0) {
+                            err(errno, "http_server_worker: epoll_ctl");
+                            goto exit;
                         }
 
                     }
@@ -734,11 +771,10 @@ int                 http_handle_request     (http_server_t* server, http_client_
                 }
                 
             }
-
+            
         }
 
     exit:
-
         if (events != NULL) 
             free(events);
         close(worker_fd);
@@ -800,7 +836,7 @@ int                 http_handle_request     (http_server_t* server, http_client_
             return EXIT_FAILURE;
         size_t header_len = header_end - client->read_buffer;
         
-        char* temp = memmem(client->read_buffer, header_len, "Content-Length:", 5);
+        char* temp = memmem(client->read_buffer, header_len, "Content-Length:", 15);
         if (temp == NULL)
             return EXIT_SUCCESS;
         temp += 15;
@@ -837,7 +873,7 @@ int                 http_handle_request     (http_server_t* server, http_client_
         }
 
         if (route->handler == NULL) {
-            http_try_write_error(client->fd, 500);
+            http_try_write_error(client->fd, 404);
             return EXIT_FAILURE;
         }
 
